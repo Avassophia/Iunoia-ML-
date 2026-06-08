@@ -1,0 +1,137 @@
+IUNOIA CORE — FULL MODEL RUN GUIDE
+
+---
+
+1. OPEN TERMINAL
+
+Use Command Prompt or PowerShell.
+
+---
+
+2. NAVIGATE TO PROJECT ROOT
+
+You should see:
+
+* run.py
+* model/
+* config/
+* data/
+* demo/
+
+---
+
+3. INSTALL REQUIREMENTS
+
+Run:
+
+py -m pip install -r requirements.txt
+
+---
+
+4. VERIFY PROJECT FILES
+
+Ensure these exist:
+
+config\constants.json
+demo\sample_input.json
+model\predictor.py
+model\features.py
+model\risk_scores.py
+run.py
+
+---
+
+5. (OPTIONAL) TRAIN MACHINE LEARNING MODEL
+
+Only if you have dataset.
+
+Step 5.1 — Place dataset:
+
+data\raw\your_data.csv
+
+Dataset must include:
+cycle, bone, cortisol
+
+Step 5.2 — Train model:
+
+py -m model.train
+
+This creates:
+
+model\saved\model.pkl
+
+---
+
+6. RUN FULL MODEL (USING run.py)
+
+From project root:
+
+py run.py
+
+---
+
+7. WHAT THE SYSTEM DOES
+
+Flow:
+
+sample_input.json
+↓
+build_features()
+↓
+predict_features()
+↓              ↓
+ML model     simulator fallback
+↓
+risk_scores.py
+↓
+FINAL OUTPUT
+
+---
+
+8. EXPECTED OUTPUT
+
+=== FINAL RESULT ===
+
+inputs: {...}
+features: {...}
+outputs:
+mission_day: 87
+cortisol_load: XX.X
+cycle_variability_days: X.X
+bone_loss_pct_per_month: X.X
+risk_score: X.XX
+risk_overall: Low / Moderate / High
+risk_breakdown: {...}
+
+---
+
+9. COMMON ERRORS + FIXES
+
+ERROR: ModuleNotFoundError
+Fix:
+py -m pip install -r requirements.txt
+
+ERROR: FileNotFoundError: demo/sample_input.json
+Fix:
+Ensure file exists:
+iunoia-core\demo\sample_input.json
+
+ERROR: constants.json not found
+Fix:
+Ensure file exists:
+iunoia-core\config\constants.json
+
+ERROR: Model load failed
+Fix:
+Train model OR ignore (simulator will run)
+
+ERROR: ML model failed, falling back
+Fix:
+Feature mismatch with dataset
+
+ERROR: cortisol_load not defined
+Fix:
+Ensure predictor.py includes:
+
+cortisol_score_0_to_1 = _clamp(base_cort * time_gain * sensitivity, 0.0, 1.0)
+cortisol_load = round(100.0 * cortisol_score_0_to_1, 1)

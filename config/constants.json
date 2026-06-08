@@ -1,0 +1,52 @@
+{
+  "sleep": {
+    "baseline_hours_per_72h": 24.0,
+    "max_hours_per_72h": 72.0
+  },
+  "cortisol": {
+    "time_scale_days": 180.0,
+    "time_gain_base": 0.25,
+    "time_gain_max": 0.55,
+    "stress_weight": 0.40,
+    "sleep_deficit_weight": 0.35,
+    "isolation_weight": 0.15,
+    "interaction_weight": 0.10,
+    "reproductive_sensitivity": 0.12,
+    "sleep_disorder_sensitivity": 0.08
+  },
+  "cycle_variability": {
+    "baseline_days": 0.5,
+    "max_additional_days": 9.5,
+    "stress_weight": 0.30,
+    "sleep_deficit_weight": 0.25,
+    "isolation_weight": 0.15,
+    "radiation_weight": 0.10,
+    "history_weight": 0.10,
+    "reproductive_weight": 0.10,
+    "stress_sleep_interaction": 0.08,
+    "isolation_stress_interaction": 0.05
+  },
+  "bone_loss": {
+    "baseline_pct_per_month": 0.2,
+    "max_additional_pct_per_month": 2.0,
+    "gravity_weight": 0.55,
+    "radiation_gravity_weight": 0.20,
+    "baseline_concern_weight": 0.10,
+    "sleep_deficit_weight": 0.08,
+    "stress_weight": 0.07
+  },
+  "risk_buckets": {
+    "low_threshold": 0.35,
+    "moderate_threshold": 0.70
+  },
+  "ml": {
+    "target_columns": ["cycle", "bone", "cortisol"],
+    "test_size": 0.2,
+    "random_state": 42,
+    "risk_weights": {
+        "cortisol": 0.45,
+        "cycle": 0.30,
+        "bone": 0.25
+    }
+  }
+}

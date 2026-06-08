@@ -1,0 +1,16 @@
+{
+  "mission": {
+    "mission_day": 87,
+    "gravity": "microgravity",
+    "radiation_level": "high",
+    "isolation_level": "high",
+    "stress_level": 0.72,
+    "sleep_hours_last_72h": 16.5
+  },
+  "history": {
+    "cycle_irregularity_history": "moderate",
+    "bone_density_concerns": "some",
+    "sleep_disorders": "circadian",
+    "prior_pcos_or_endometriosis": false
+  }
+}
