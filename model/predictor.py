@@ -1,25 +1,3 @@
-"""
-PREDICTOR — maps raw mission inputs and engineered features to mission projections.
-
-MVP "physics-inspired" + evidence-informed simulator:
-- Cortisol Load (0–100)
-- Cycle Variability (absolute +/- days)
-- Bone Loss Rate (% BMD per month)
-
-Designed to be replaced by a trained Azure ML model later.
-
-Recommended run (module mode):
-  cd iunoia-core
-  python -m model.predictor
-
-Also supports (script mode):
-  python model/predictor.py
-"""
-
-"""
-...docstring...
-"""
-
 from dataclasses import dataclass
 from typing import Dict, Any
 import math
@@ -30,18 +8,10 @@ CONST = load_constants()
 try:
     from .inference import load_model, predict as ml_predict
     MODEL = load_model()
-except:
+except Exception:
     MODEL = None
 
-try:
-    from .features import build_features
-    from .risk_scores import attach_risk_breakdown
-except ImportError:
-    from features import build_features
-    from risk_scores import attach_risk_breakdown
-
-
-# --- imports that work in BOTH module and script mode ---
+# imports that work in BOTH module and script mode
 try:
     # Module mode: python -m model.predictor
     from .features import build_features
@@ -51,24 +21,16 @@ except ImportError:
     from features import build_features
     from risk_scores import attach_risk_breakdown
 
-
-# -------------------------
 # Types
-# -------------------------
-
 @dataclass(frozen=True)
 class Prediction:
     mission_day: int
-    cortisol_load: float               # 0–100 (higher = worse)
-    cycle_variability_days: float      # abs deviation from baseline cycle length (days)
-    bone_loss_pct_per_month: float     # % BMD loss per month
-    drivers: Dict[str, str]            # short explanations of top drivers
+    cortisol_load: float # 0–100 (higher = worse)
+    cycle_variability_days: float # abs deviation from baseline cycle length (days)
+    bone_loss_pct_per_month: float # % BMD loss per month
+    drivers: Dict[str, str] # short explanations of top drivers
 
-
-# -------------------------
 # Helpers
-# -------------------------
-
 def _clamp(x: float, lo: float, hi: float) -> float:
     return max(lo, min(hi, x))
 
@@ -76,16 +38,9 @@ def _clamp(x: float, lo: float, hi: float) -> float:
 def _sigmoid(x: float) -> float:
     return 1.0 / (1.0 + math.exp(-x))
 
-
-# -------------------------
 # Core simulator
-# -------------------------
 
 def predict_from_features(features: Dict[str, float]) -> Prediction:
-    """
-    Engineered features -> projections.
-    Feature keys come from build_features() in features.py
-    """
 
     mission_day = int(features.get("mission_day", 1))
 
@@ -216,9 +171,6 @@ def predict_from_features(features: Dict[str, float]) -> Prediction:
 # -------------------------
 
 def predict_features(features: Dict[str, float]) -> Dict[str, Any]:
-    """
-    Uses ML model if available, otherwise fallback to simulator
-    """
 
     if MODEL is not None:
         try:
@@ -252,18 +204,12 @@ def predict_features(features: Dict[str, float]) -> Dict[str, Any]:
 
 
 def predict_raw(payload: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Raw mission inputs -> engineered features -> outputs.
-    This is your end-to-end 'online endpoint' function.
-    """
+
     feats = build_features(payload)
     outputs = predict_features(feats)
     return {"inputs": payload, "features": feats, "outputs": outputs}
 
-
-# -------------------------
 # Local demo
-# -------------------------
 
 if __name__ == "__main__":
     payload = {
