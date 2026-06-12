@@ -13,6 +13,7 @@ Use Command Prompt or PowerShell.
 You should see:
 
 * run.py
+* generate_datasets.py
 * model/
 * config/
 * data/
@@ -37,22 +38,51 @@ demo\sample_input.json
 model\predictor.py
 model\features.py
 model\risk_scores.py
+generate_datasets.py
 run.py
 
 ---
 
-5. (OPTIONAL) TRAIN MACHINE LEARNING MODEL
+5. (OPTIONAL) GENERATE SYNTHETIC TRAINING DATA
 
-Only if you have dataset.
+Only needed if you want to train the ML model and don't have real data.
 
-Step 5.1 — Place dataset:
+Run with defaults (generates seed, scenario, and parameter variants):
+
+py generate_datasets.py
+
+Output is written to three subfolders:
+
+data\synthetic\seeds\        — seed variants (5 by default)
+data\synthetic\scenarios\    — mission risk profiles (low/moderate/high/worst-case)
+data\synthetic\params\       — weight combos from constants.json (8 variants)
+
+Options:
+
+py generate_datasets.py --seeds 3          # change number of seed variants
+py generate_datasets.py --no-seeds         # skip seed variants
+py generate_datasets.py --no-scenarios     # skip scenario variants
+py generate_datasets.py --no-params        # skip parameter sweep variants
+py generate_datasets.py --out my_data\     # write to a custom folder
+
+---
+
+6. (OPTIONAL) TRAIN MACHINE LEARNING MODEL
+
+Only needed if you have a dataset (real or generated).
+
+Step 6.1 — Place dataset:
 
 data\raw\your_data.csv
 
-Dataset must include:
+Or use a file generated in Step 5, e.g.:
+
+data\synthetic\seeds\seed_001.csv
+
+Dataset must include target columns:
 cycle, bone, cortisol
 
-Step 5.2 — Train model:
+Step 6.2 — Train model:
 
 py -m model.train
 
@@ -62,7 +92,7 @@ model\saved\model.pkl
 
 ---
 
-6. RUN FULL MODEL (USING run.py)
+7. RUN FULL MODEL (USING run.py)
 
 From project root:
 
@@ -70,7 +100,7 @@ py run.py
 
 ---
 
-7. WHAT THE SYSTEM DOES
+8. WHAT THE SYSTEM DOES
 
 Flow:
 
@@ -88,7 +118,7 @@ FINAL OUTPUT
 
 ---
 
-8. EXPECTED OUTPUT
+9. EXPECTED OUTPUT
 
 === FINAL RESULT ===
 
@@ -105,7 +135,7 @@ risk_breakdown: {...}
 
 ---
 
-9. COMMON ERRORS + FIXES
+10. COMMON ERRORS + FIXES
 
 ERROR: ModuleNotFoundError
 Fix:
@@ -123,11 +153,12 @@ iunoia-core\config\constants.json
 
 ERROR: Model load failed
 Fix:
-Train model OR ignore (simulator will run)
+Train model (Step 6) OR ignore — simulator will run as fallback
 
 ERROR: ML model failed, falling back
 Fix:
-Feature mismatch with dataset
+Feature mismatch between saved model and current dataset.
+Regenerate data (Step 5) and retrain (Step 6).
 
 ERROR: cortisol_load not defined
 Fix:
@@ -135,3 +166,7 @@ Ensure predictor.py includes:
 
 cortisol_score_0_to_1 = _clamp(base_cort * time_gain * sensitivity, 0.0, 1.0)
 cortisol_load = round(100.0 * cortisol_score_0_to_1, 1)
+
+ERROR: FileNotFoundError: data/synthetic/...
+Fix:
+Run generate_datasets.py first (Step 5)
