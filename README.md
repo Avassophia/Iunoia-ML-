@@ -23,9 +23,13 @@ It combines:
 ```
 iunoia-core/
 │
+├── config/
+│   └── constants.json       # Model weights and thresholds
+│
 ├── data/
 │   ├── raw/
 │   │   └── your_data.csv
+│   ├── synthetic/           # Generated training datasets
 │   └── processed/
 │
 ├── model/
@@ -40,6 +44,7 @@ iunoia-core/
 ├── demo/
 │   └── sample_input.json
 │
+├── generate_datasets.py     # Synthetic dataset generator
 ├── requirements.txt
 └── README.md
 ```
@@ -82,22 +87,40 @@ pip install -r requirements.txt
 
 ---
 
+## Generating Synthetic Datasets
+
+If you don't have real training data, use the included generator to produce synthetic CSVs from the simulator. It creates multiple datasets varying mission risk profiles, random seeds, and parameter sweeps from `constants.json`.
+
+```
+python generate_datasets.py
+```
+
+Output is written to `data/synthetic/`. Each CSV contains the full set of input features plus the three target columns (`cycle`, `bone`, `cortisol`).
+
+### Options
+
+| Flag | Description |
+| --- | --- |
+| `--seeds N` | Generate N variants with different random seeds (default: 1) |
+| `--no-params` | Skip parameter sweeps from `constants.json` |
+| `--out <dir>` | Write output to a custom directory instead of `data/synthetic/` |
+
+```
+python generate_datasets.py --seeds 3
+python generate_datasets.py --no-params
+python generate_datasets.py --out my_data/
+```
+
+---
+
 ## Training the Model
 
-1. Place your dataset in:
-
-```
-data/raw/your_data.csv
-```
+1. Place your dataset in `data/raw/your_data.csv`, or generate one (see above).
 
 2. Ensure it contains:
 
-* Input features (mixed numerical + categorical)
-* Target columns:
-
-  * `cycle`
-  * `bone`
-  * `cortisol`
+   * Input features (mixed numerical + categorical)
+   * Target columns: `cycle`, `bone`, `cortisol`
 
 3. Run training:
 
@@ -109,23 +132,27 @@ This will:
 
 * Train the model
 * Evaluate performance (MSE, R²)
-* Save model to:
-
-```
-model/saved/model.pkl
-```
+* Save model to `model/saved/model.pkl`
 
 ---
 
 ## Running Predictions
 
-### Option 1 — Full pipeline (recommended)
+### Option 1 — Quick demo
+
+```
+python run.py
+```
+
+Loads `demo/sample_input.json` and prints the full prediction output.
+
+### Option 2 — Full pipeline (module mode)
 
 ```
 python -m model.predictor
 ```
 
-### Option 2 — Direct ML inference
+### Option 3 — Direct ML inference
 
 ```python
 from model.inference import load_model, predict
@@ -162,28 +189,21 @@ This ensures:
 
 ---
 
+## Example Workflow
+
+1. Generate training data → `python generate_datasets.py`
+2. Train model → `python -m model.train data/synthetic/<filename>.csv`
+3. Run predictions → `python run.py`
+
+---
+
 ## Data Requirements
 
 Your dataset should:
 
 * Contain **no missing values** (or be pre-cleaned)
-* Include both:
-
-  * Numerical columns (floats/ints)
-  * Categorical columns (strings)
-* Include target columns:
-
-  ```
-  cycle, bone, cortisol
-  ```
-
----
-
-## Example Workflow
-
-1. Add dataset → `data/raw/`
-2. Train model → `python -m model.train`
-3. Run predictions → `python -m model.predictor`
+* Include both numerical columns (floats/ints) and categorical columns (strings)
+* Include target columns: `cycle`, `bone`, `cortisol`
 
 ---
 
@@ -204,10 +224,6 @@ Your dataset should:
 
 * The simulator in `predictor.py` is still active as a fallback
 * The ML model overrides simulator outputs when available
-* Designed for easy upgrade to cloud deployment (e.g., Azure ML)
+* Designed for easy upgrade to cloud deployment
 
 ---
-
-## License
-
-Internal / TBD
