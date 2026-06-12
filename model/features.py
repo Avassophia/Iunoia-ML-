@@ -1,3 +1,10 @@
+try:
+    from .config_loader import load_constants
+except ImportError:
+    from config_loader import load_constants
+
+CONST = load_constants()
+
 def build_features(payload: dict) -> dict:
     mission = payload.get("mission", {})
     history = payload.get("history", {})
@@ -43,7 +50,8 @@ def build_features(payload: dict) -> dict:
 
     stress = float(mission.get("stress_level", 0.5))
     sleep_hours = float(mission.get("sleep_hours_last_72h", 18.0))
-    sleep_deficit = max(0.0, (21.0 - sleep_hours) / 21.0)
+    baseline_sleep = CONST["sleep"]["baseline_hours_per_72h"]
+    sleep_deficit = max(0.0, (baseline_sleep - sleep_hours) / baseline_sleep)
 
     g   = gravity_map.get(mission.get("gravity", "microgravity"), 1.0)
     r   = radiation_map.get(mission.get("radiation_level", "moderate"), 0.5)
